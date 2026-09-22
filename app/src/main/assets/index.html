@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Energiedaten</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f1f0eb;--surf:#ffffff;--surf2:#f8f7f4;
+  --text:#0b0b0b;--text2:#52514e;--text3:#898781;
+  --bd:rgba(11,11,11,0.12);--bd2:rgba(11,11,11,0.22);
+  --blue:#2a78d6;--orange:#eb6834;--green:#1baf7a;
+  --red:#c0392b;--bg-red:#fdf0f0;
+  --radius:8px;--font:system-ui,-apple-system,sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#111110;--surf:#1f1f1e;--surf2:#2a2a29;
+  --text:#f0efec;--text2:#c3c2b7;--text3:#898781;
+  --bd:rgba(255,255,255,0.10);--bd2:rgba(255,255,255,0.22);
+  --bg-red:#3d1010;
+}}
+html,body{min-height:100%;background:var(--bg);font-family:var(--font);color:var(--text);font-size:16px;line-height:1.5;}
+body{max-width:480px;margin:0 auto;padding:0 16px 40px;}
+h1{font-size:15px;font-weight:500;}
+p{margin:0;}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid var(--bd);margin:8px 0 20px;}
+.tab{flex:1;padding:10px 4px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font);transition:color .15s;}
+.tab.on{border-bottom-color:var(--blue);color:var(--blue);font-weight:500;}
+
+/* Panels */
+.panel{display:none;}.panel.on{display:block;}
+
+/* Cards */
+.card{background:var(--surf);border:1px solid var(--bd);border-radius:12px;padding:16px 20px;margin-bottom:12px;}
+
+/* Form */
+label.lbl{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;}
+input[type=number],input[type=month]{
+  width:100%;padding:9px 12px;border:1px solid var(--bd2);border-radius:var(--radius);
+  background:var(--surf2);color:var(--text);font-size:15px;font-family:var(--font);
+  outline:none;appearance:none;-webkit-appearance:none;
+}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(42,120,214,0.15);}
+.field{margin-bottom:14px;}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px;}
+
+/* Button */
+button{font-family:var(--font);cursor:pointer;border-radius:var(--radius);transition:opacity .15s;}
+.btn-main{width:100%;padding:11px;background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:500;border-radius:var(--radius);}
+.btn-main:active{opacity:.85;}
+.btn-del{font-size:12px;color:var(--red);background:none;border:1px solid var(--red);padding:6px 12px;margin-top:6px;}
+
+/* Stat cards */
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+.stat{background:var(--surf2);border-radius:var(--radius);padding:12px 14px;}
+.stat .sl{font-size:11px;color:var(--text3);margin-bottom:2px;}
+.stat .sv{font-size:22px;font-weight:500;}
+.stat .su{font-size:12px;color:var(--text2);font-weight:400;}
+
+/* Year select */
+.yr-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.yr-row label{font-size:12px;color:var(--text2);}
+select{flex:1;padding:8px 10px;border:1px solid var(--bd2);border-radius:var(--radius);background:var(--surf2);color:var(--text);font-size:14px;font-family:var(--font);}
+
+/* Verlauf */
+.yr-hd{font-size:11px;font-weight:500;color:var(--text3);padding:8px 0 4px;letter-spacing:.04em;text-transform:uppercase;}
+.hrow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd);}
+.hrow:last-child{border-bottom:none;}
+
+/* Chart containers */
+.chart-wrap{width:100%;height:175px;margin-top:6px;}
+
+/* Misc */
+.err{color:var(--red);font-size:12px;margin-bottom:8px;display:none;}
+.hint{font-size:11px;color:var(--text3);text-align:center;margin-top:6px;}
+.empty{text-align:center;padding:36px 0;color:var(--text3);font-size:13px;line-height:1.7;}
+.success-msg{display:none;color:var(--green);font-size:13px;text-align:center;margin-top:8px;}
+.ed-form{background:var(--surf2);border-radius:var(--radius);padding:10px;margin-top:6px;}
+.ed-form input{margin-bottom:8px;}
+.ed-row{display:flex;gap:6px;margin-top:2px;}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:var(--radius);border:1px solid var(--bd2);background:none;color:var(--text);cursor:pointer;}
+.btn-sm.pri{background:var(--blue);color:#fff;border-color:var(--blue);}
+.badge-w{font-size:9px;background:var(--bg-red);color:var(--red);border-radius:3px;padding:1px 4px;}
+.est-tag{font-size:9px;color:var(--text3);font-style:italic;}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div style="padding:16px 0 8px;display:flex;align-items:center;gap:10px;">
+  <div style="width:38px;height:38px;border-radius:var(--radius);background:#deeeff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⚡</div>
+  <div>
+    <h1>Energiedaten</h1>
+    <p style="font-size:11px;color:var(--text2);">Strom · Gas · Wasser</p>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab on" id="btn-e" onclick="showTab('e')">✏️ Eingabe</button>
+  <button class="tab" id="btn-v" onclick="showTab('v')">📋 Verlauf</button>
+  <button class="tab" id="btn-a" onclick="showTab('a')">📊 Auswertung</button>
+</div>
+
+<!-- EINGABE -->
+<div id="pan-e" class="panel on">
+  <div class="card">
+    <div class="field">
+      <label class="lbl" for="inp-m">Monat</label>
+      <input type="month" id="inp-m">
+    </div>
+    <div class="field">
+      <label class="lbl" for="inp-s"><span class="dot" style="background:var(--blue)"></span>Strom (kWh)</label>
+      <input type="number" id="inp-s" placeholder="Zählerstand" step="0.1" min="0">
+    </div>
+    <div class="field">
+      <label class="lbl" for="inp-g"><span class="dot" style="background:var(--orange)"></span>Gas (m³)</label>
+      <input type="number" id="inp-g" placeholder="Zählerstand" step="0.001" min="0">
+    </div>
+    <div class="field">
+      <label class="lbl" for="inp-w"><span class="dot" style="background:var(--green)"></span>Wasser (m³)</label>
+      <input type="number" id="inp-w" placeholder="Zählerstand" step="0.001" min="0">
+    </div>
+    <div id="err" class="err"></div>
+    <button class="btn-main" id="save-btn" onclick="saveEntry()">💾 Speichern</button>
+    <div id="ok" class="success-msg">✓ Gespeichert</div>
+  </div>
+  <p class="hint">Zähler monatlich zum gleichen Datum ablesen</p>
+</div>
+
+<!-- VERLAUF -->
+<div id="pan-v" class="panel">
+  <div id="verlauf"></div>
+</div>
+
+<!-- AUSWERTUNG -->
+<div id="pan-a" class="panel">
+  <div id="stats" class="stats"></div>
+  <div class="yr-row">
+    <label>Jahr:</label>
+    <select id="yr-sel" onchange="selYear=this.value;renderA()"></select>
+  </div>
+  <div class="card">
+    <p style="font-size:13px;font-weight:500;margin-bottom:8px;">⚡ Strom (kWh)</p>
+    <div class="chart-wrap" id="ch-s"></div>
+  </div>
+  <div class="card">
+    <p style="font-size:13px;font-weight:500;margin-bottom:8px;">🔥 Gas (m³)</p>
+    <div class="chart-wrap" id="ch-g"></div>
+  </div>
+  <div class="card">
+    <p style="font-size:13px;font-weight:500;margin-bottom:8px;">💧 Wasser (m³)</p>
+    <div class="chart-wrap" id="ch-w"></div>
+  </div>
+</div>
+
+<script>
+const MDE=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+let selYear='all';
+
+const SEED={
+  "2021-01":{s:121501,g:0,w:300},"2021-02":{s:121905,g:0,w:306},"2021-03":{s:122307,g:0,w:311},
+  "2021-04":{s:122681,g:1,w:316},"2021-05":{s:123082,g:57,w:324},"2021-06":{s:123501,g:69,w:348},
+  "2021-07":{s:123905,g:72,w:355},"2021-08":{s:124191,g:73,w:364},"2021-09":{s:124514,g:82,w:368},
+  "2021-10":{s:124881,g:117,w:373},"2021-11":{s:125300,g:167,w:379},"2021-12":{s:125436,g:233,w:384},
+  "2022-01":{s:125891,g:245,w:386},"2022-02":{s:126255,g:280,w:391},"2022-03":{s:126628,g:300,w:397},
+  "2022-04":{s:126957,g:326,w:403},"2022-05":{s:127248,g:337,w:410},"2022-06":{s:127614,g:344,w:415},
+  "2022-07":{s:127977,g:345,w:423},"2022-08":{s:128296,g:345,w:432},"2022-09":{s:128501,g:345,w:441},
+  "2022-10":{s:128789,g:351,w:444},"2022-11":{s:129153,g:356,w:447},"2022-12":{s:129555,g:369,w:452},
+  "2023-01":{s:129929,g:400,w:457},"2023-02":{s:130227,g:448,w:461},"2023-03":{s:130517,g:484,w:466},
+  "2023-04":{s:130759,g:538,w:471},"2023-05":{s:131013,g:569,w:3,_ov:{wasser:6},_change:['wasser']},"2023-06":{s:131178,g:578,w:11},
+  "2023-07":{s:131478,g:578,w:20},"2023-08":{s:131710,g:580,w:34},"2023-09":{s:131833,g:582,w:37},
+  "2023-10":{s:132087,g:604,w:41},"2023-11":{s:132385,g:654,w:45},"2023-12":{s:132735,g:703,w:49},
+  "2024-01":{s:133109,g:776,w:53},"2024-02":{s:133402,g:796,w:58},"2024-03":{s:133689,g:822,w:64},
+  "2024-04":{s:133875,g:828,w:69},"2024-05":{s:134090,g:833,w:74},"2024-06":{s:134293,g:838,w:80},
+  "2024-07":{s:134426,g:838,w:86},"2024-08":{s:134767,g:838,w:95},"2024-09":{s:134894,g:842,w:101},
+  "2024-10":{s:135151,g:853,w:107},"2024-11":{s:135436,g:884,w:111},"2024-12":{s:135783,g:932,w:115},
+  "2025-01":{s:136106,g:969,w:120},"2025-02":{s:136361,g:1027,w:124},"2025-03":{s:136578,g:1058,w:130},
+  "2025-04":{s:136746,g:1075,w:137},"2025-05":{s:136891,g:1087,w:145},"2025-06":{s:137071,g:1087,w:164},
+  "2025-07":{s:137150,g:1087,w:169,_est:['wasser']},"2025-08":{s:137333,g:1087,w:172},"2025-09":{s:137665,g:1087,w:186},
+  "2025-10":{s:137822,g:1092,w:189},"2025-11":{s:138063,g:1093,w:193},"2025-12":{s:138309,g:1136,w:197},
+  "2026-01":{s:138652,g:1194,w:201},"2026-02":{s:138984,g:1280,w:205},"2026-03":{s:139232,g:1327,w:209},
+  "2026-04":{s:139450,g:1356,w:213},"2026-05":{s:139603,g:1375,w:218},"2026-06":{s:139778,g:1386,w:224},
+  "2026-07":{s:139993,g:1386,w:232},"2026-08":{s:140152,g:1386,w:239},"2026-09":{s:140447,g:1389,w:248}
+};
+
+function load(){try{return JSON.parse(localStorage.getItem('ev1')||'{}');}catch{return {};}}
+function save(d){try{localStorage.setItem('ev1',JSON.stringify(d));}catch{}}
+function keys(d){return Object.keys(d).sort();}
+function fm(ym){const[y,m]=ym.split('-');return MDE[+m-1]+' '+y.slice(2);}
+function yr(ym){return ym.split('-')[0];}
+
+function seedIfEmpty(){
+  try{
+    const e=localStorage.getItem('ev1');
+    if(!e||e==='{}'){
+      const d={};
+      Object.entries(SEED).forEach(([k,v])=>{
+        d[k]={};
+        if(v.s!=null)d[k].strom=v.s;
+        if(v.g!=null)d[k].gas=v.g;
+        if(v.w!=null)d[k].wasser=v.w;
+        if(v._ov)d[k]._ov=v._ov;
+        if(v._change)d[k]._change=v._change;
+        if(v._est)d[k]._est=v._est;
+      });
+      save(d);
+    } else {
+      // Patch existing data: fix 2023-05 and 2025-07 if not yet corrected
+      const d=JSON.parse(e);
+      let changed=false;
+      if(d['2023-05']&&!d['2023-05']._ov){d['2023-05']._ov={wasser:6};d['2023-05']._change=['wasser'];changed=true;}
+      if(d['2025-07']&&d['2025-07'].wasser==null){d['2025-07'].wasser=169;d['2025-07']._est=['wasser'];changed=true;}
+      if(changed)save(d);
+    }
+  }catch{}
+}
+
+function calcC(data,months){
+  const out=[];
+  for(let i=1;i<months.length;i++){
+    const p=data[months[i-1]],c=data[months[i]];
+    const ov=c._ov||{};
+    const calcField=(f)=>ov[f]!=null?ov[f]:(c[f]!=null&&p[f]!=null)?+(c[f]-p[f]).toFixed(3):null;
+    out.push({month:months[i],strom:calcField('strom'),gas:calcField('gas'),wasser:calcField('wasser')});
+  }
+  return out;
+}
+
+function showTab(t){
+  ['e','v','a'].forEach(id=>{
+    document.getElementById('pan-'+id).classList.toggle('on',id===t);
+    document.getElementById('btn-'+id).classList.toggle('on',id===t);
+  });
+  if(t==='v')renderV();
+  if(t==='a')renderA();
+}
+
+function initMonth(){
+  const n=new Date();
+  document.getElementById('inp-m').value=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');
+}
+
+function saveEntry(){
+  document.getElementById('err').style.display='none';
+  document.getElementById('ok').style.display='none';
+  const m=document.getElementById('inp-m').value;
+  const s=document.getElementById('inp-s').value.trim();
+  const g=document.getElementById('inp-g').value.trim();
+  const w=document.getElementById('inp-w').value.trim();
+  if(!m){showErr('Bitte Monat auswählen.');return;}
+  if(!s&&!g&&!w){showErr('Mindestens einen Zählerstand eingeben.');return;}
+  const d=load();
+  if(!d[m])d[m]={};
+  if(s!=='')d[m].strom=parseFloat(s);
+  if(g!=='')d[m].gas=parseFloat(g);
+  if(w!=='')d[m].wasser=parseFloat(w);
+  save(d);
+  ['inp-s','inp-g','inp-w'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ok').style.display='block';
+  setTimeout(()=>document.getElementById('ok').style.display='none',2000);
+}
+function showErr(msg){const e=document.getElementById('err');e.textContent=msg;e.style.display='block';}
+
+let delStep=0,delTimer=null;
+function delAll(){
+  const btn=document.getElementById('del-btn');
+  if(!btn)return;
+  if(delStep===1){
+    clearTimeout(delTimer);delStep=0;
+    localStorage.removeItem('ev1');
+    renderV();
+  }else{
+    delStep=1;
+    const orig=btn.textContent;
+    btn.textContent='⚠️ Bestätigen — löscht alle Daten';
+    btn.style.background='var(--bg-red)';
+    delTimer=setTimeout(()=>{delStep=0;if(document.getElementById('del-btn')){btn.textContent=orig;btn.style.background='';}},4000);
+  }
+}
+
+let editMonth=null;
+
+function startEdit(ym){editMonth=ym;renderV();}
+function cancelEdit(){editMonth=null;renderV();}
+
+function saveEdit(ym){
+  const data=load();
+  if(!data[ym])data[ym]={};
+  const s=document.getElementById('ed-s').value.trim();
+  const g=document.getElementById('ed-g').value.trim();
+  const w=document.getElementById('ed-w').value.trim();
+  const ov=document.getElementById('ed-ov')?document.getElementById('ed-ov').value.trim():'';
+  if(s!=='')data[ym].strom=parseFloat(s); else delete data[ym].strom;
+  if(g!=='')data[ym].gas=parseFloat(g); else delete data[ym].gas;
+  if(w!==''){data[ym].wasser=parseFloat(w);delete data[ym]._est;}
+  if(ov!==''){if(!data[ym]._ov)data[ym]._ov={};data[ym]._ov.wasser=parseFloat(ov);}
+  save(data);
+  editMonth=null;
+  renderV();
+}
+
+function renderV(){
+  const data=load(),months=keys(data),el=document.getElementById('verlauf');
+  if(!months.length){el.innerHTML='<div class="empty">Noch keine Daten.<br>Im Tab "Eingabe" Zählerstände erfassen.</div>';return;}
+  const c=calcC(data,months);
+  const years=[...new Set(months.map(yr))].sort().reverse();
+  let html='';
+  for(const y of years){
+    const ym=months.filter(m=>yr(m)===y).reverse();
+    html+=`<div class="card"><div class="yr-hd">${y}</div>`;
+    for(const mo of ym){
+      const d=data[mo],con=c.find(x=>x.month===mo);
+      if(mo===editMonth){
+        const isChange=d._change&&d._change.includes('wasser');
+        html+=`<div style="padding:8px 0;">
+          <p style="font-size:13px;font-weight:500;margin-bottom:8px;">${fm(mo)} bearbeiten</p>
+          <div class="ed-form">
+            <label class="lbl" style="font-size:11px;">⚡ Strom (kWh)</label>
+            <input id="ed-s" type="number" step="0.1" value="${d.strom??''}" style="width:100%;margin-bottom:8px;">
+            <label class="lbl" style="font-size:11px;">🔥 Gas (m³)</label>
+            <input id="ed-g" type="number" step="0.001" value="${d.gas??''}" style="width:100%;margin-bottom:8px;">
+            <label class="lbl" style="font-size:11px;">💧 Wasser (m³) — Zählerstand</label>
+            <input id="ed-w" type="number" step="0.001" value="${d.wasser??''}" style="width:100%;margin-bottom:8px;">
+            ${isChange?`<label class="lbl" style="font-size:11px;">💧 Wasser Verbrauch (Schätzwert, m³)</label>
+            <input id="ed-ov" type="number" step="0.1" value="${d._ov?.wasser??''}" style="width:100%;margin-bottom:8px;">`:''}
+          </div>
+          <div class="ed-row">
+            <button class="btn-sm pri" onclick="saveEdit('${mo}')">Speichern</button>
+            <button class="btn-sm" onclick="cancelEdit()">Abbrechen</button>
+          </div>
+        </div>`;
+      } else {
+        const isEst=d._est&&d._est.length>0;
+        const isChange=d._change&&d._change.includes('wasser');
+        const rd=[
+          d.strom!=null?`<span style="color:var(--blue)">⚡${d.strom.toLocaleString('de-DE')}</span>`:null,
+          d.gas!=null?`<span style="color:var(--orange)">🔥${d.gas.toLocaleString('de-DE')}</span>`:null,
+          d.wasser!=null?`<span style="color:var(--green)">💧${d.wasser.toLocaleString('de-DE')}${isEst?' <span class="est-tag">~</span>':''}</span>`:null,
+        ].filter(Boolean).join(' ');
+        const dt=con?[
+          con.strom!=null?`+${(+con.strom.toFixed(1)).toLocaleString('de-DE')} kWh`:null,
+          con.gas!=null?`+${(+con.gas.toFixed(1)).toLocaleString('de-DE')} m³`:null,
+          con.wasser!=null?`+${(+con.wasser.toFixed(1)).toLocaleString('de-DE')} m³${isChange?' <span class="badge-w">W</span>':''}${isEst&&d._est.includes('wasser')?' <span class="est-tag">~</span>':''}`:null,
+        ].filter(Boolean).join('<br>'):`<span style="color:var(--text3)">Erster Eintrag</span>`;
+        html+=`<div class="hrow">
+          <div style="flex:1">
+            <p style="font-size:14px;font-weight:500">${fm(mo)}</p>
+            <p style="font-size:11px;margin-top:2px">${rd}</p>
+          </div>
+          <div style="text-align:right;font-size:11px;color:var(--text2);margin:0 8px">${dt}</div>
+          <button class="btn-sm" style="padding:4px 8px;font-size:11px;flex-shrink:0;" onclick="startEdit('${mo}')">✏️</button>
+        </div>`;
+      }
+    }
+    html+='</div>';
+  }
+  html+=`<button class="btn-del" id="del-btn" onclick="delAll()">🗑 Alle Daten löschen</button>`;
+  el.innerHTML=html;
+}
+
+function buildSel(){
+  const d=load(),years=[...new Set(keys(d).map(yr))].sort();
+  const sel=document.getElementById('yr-sel');
+  if(!sel)return;
+  sel.innerHTML=`<option value="all" ${selYear==='all'?'selected':''}>Alle Jahre</option>`+
+    years.map(y=>`<option value="${y}" ${y===selYear?'selected':''}>${y}</option>`).join('');
+}
+
+function drawChart(elId,values,labels,color,lines){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  const W=340,H=165,L=36,B=32,T=6,R=4,cW=W-L-R,cH=H-B-T;
+  const valid=values.filter(v=>v!=null&&v>=0);
+  if(!valid.length){el.innerHTML='<p style="color:var(--text3);font-size:12px;text-align:center;padding:40px 0">Keine Daten</p>';return;}
+  const maxV=Math.max(...valid)*1.12||1;
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const tc='#898781',gc=isDark?'#333330':'#e1e0d9';
+  const n=labels.length;
+  let p=[];
+  for(let i=0;i<=4;i++){
+    const y=T+cH-(i/4)*cH,v=Math.round((i/4)*maxV);
+    p.push(`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="${gc}" stroke-width="0.8"/>`);
+    p.push(`<text x="${L-3}" y="${y+3.5}" text-anchor="end" font-size="9" fill="${tc}">${v}</text>`);
+  }
+  p.push(`<line x1="${L}" y1="${T}" x2="${L}" y2="${T+cH}" stroke="${gc}" stroke-width="0.8"/>`);
+  const ev=n>36?12:n>24?6:n>12?3:1;
+  if(lines){
+    const step=n>1?cW/(n-1):cW;
+    const pts=values.map((v,i)=>v!=null&&v>=0?`${(L+i*step).toFixed(1)},${(T+cH-(v/maxV)*cH).toFixed(1)}`:null).filter(Boolean);
+    if(pts.length>1)p.push(`<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`);
+    if(n<=24)values.forEach((v,i)=>{if(v==null||v<0)return;const x=L+i*step,y=T+cH-(v/maxV)*cH;p.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${color}" stroke="${isDark?'#1a1a19':'#fff'}" stroke-width="1.5"/>`);});
+    labels.forEach((l,i)=>{if(i%ev!==0)return;const x=(L+i*step).toFixed(1);p.push(`<text x="${x}" y="${T+cH+8}" text-anchor="end" font-size="8" fill="${tc}" transform="rotate(-40,${x},${T+cH+8})">${l}</text>`);});
+  }else{
+    const gap=cW/n,bW=Math.max(4,gap*0.68);
+    values.forEach((v,i)=>{if(v==null||v<0)return;const x=L+i*gap+gap/2,bh=Math.max(0,(v/maxV)*cH);p.push(`<rect x="${(x-bW/2).toFixed(1)}" y="${(T+cH-bh).toFixed(1)}" width="${bW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${color}" rx="2" opacity="0.85"/>`);});
+    labels.forEach((l,i)=>{if(i%ev!==0)return;const x=(L+i*gap+gap/2).toFixed(1);p.push(`<text x="${x}" y="${T+cH+8}" text-anchor="end" font-size="8" fill="${tc}" transform="rotate(-40,${x},${T+cH+8})">${l}</text>`);});
+  }
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">${p.join('')}</svg>`;
+}
+
+function renderA(){
+  const data=load(),months=keys(data),allC=calcC(data,months);
+  buildSel();
+  const cons=selYear==='all'?allC:allC.filter(x=>yr(x.month)===String(selYear));
+  const sg=document.getElementById('stats');
+  if(!cons.length){
+    sg.innerHTML='<div class="empty" style="grid-column:1/-1">Keine Daten für diesen Zeitraum.</div>';
+    ['ch-s','ch-g','ch-w'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});
+    return;
+  }
+  const lbl=selYear==='all'?'Gesamt':selYear;
+  const tS=cons.reduce((a,x)=>x.strom!=null?a+x.strom:a,0);
+  const tG=cons.reduce((a,x)=>x.gas!=null?a+x.gas:a,0);
+  const tW=cons.reduce((a,x)=>x.wasser!=null?a+x.wasser:a,0);
+  const si=[
+    cons.some(x=>x.strom!=null)?{l:'Strom '+lbl,   v:Math.round(tS),    u:'kWh',c:'var(--blue)'}:null,
+    cons.some(x=>x.gas!=null)  ?{l:'Gas '+lbl,     v:+tG.toFixed(1),    u:'m³', c:'var(--orange)'}:null,
+    cons.some(x=>x.wasser!=null)?{l:'Wasser '+lbl, v:+tW.toFixed(1),    u:'m³', c:'var(--green)'}:null,
+  ].filter(Boolean);
+  sg.innerHTML=si.map((s,i)=>{
+    const full=(si.length===3&&i===0)||si.length===1;
+    return `<div class="stat" ${full?'style="grid-column:1/-1"':''}>
+      <p class="sl">${s.l}</p>
+      <p class="sv" style="color:${s.c}">${s.v.toLocaleString('de-DE')} <span class="su">${s.u}</span></p>
+    </div>`;
+  }).join('');
+  const chartLbls=cons.map(x=>fm(x.month)),ln=selYear==='all';
+  drawChart('ch-s',cons.map(x=>x.strom), chartLbls,'#2a78d6',ln);
+  drawChart('ch-g',cons.map(x=>x.gas),   chartLbls,'#eb6834',ln);
+  drawChart('ch-w',cons.map(x=>x.wasser),chartLbls,'#1baf7a',ln);
+}
+
+seedIfEmpty();
+initMonth();
+</script>
+</body>
+</html>
